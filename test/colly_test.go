@@ -1,8 +1,8 @@
-package main
+package test
 
 import (
-	"github.com/lwl1989/go-spider/spider"
 	"testing"
+	"github.com/lwl1989/go-spider/spider"
 )
 
 //test add Func

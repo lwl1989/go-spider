@@ -53,8 +53,9 @@ func (spider *CollySpider) Run() (error) {
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("visiting", r.URL)
 	})
-	c.OnHTML("meta")
+	//c.OnHTML("meta")
 	c.OnHTML(spider.Rule.IndexDom, func(e *colly.HTMLElement) {
+		//index html got, new a queue with list
 		q, _ := queue.New(
 			2, // Number of consumer threads
 			&queue.InMemoryQueueStorage{MaxSize: spider.Rule.MaxPage}, // Use default queue storage,
@@ -66,17 +67,11 @@ func (spider *CollySpider) Run() (error) {
 				q.AddURL(scheme+":"+v)
 			}
 		}
+		// run queue
 		q.Run(c)
-		//fmt.Println(s2)
-		//s,e1 := e.DOM.Html()
-		//fmt.Println(s,e1)
 	})
 	c.OnHTML(spider.Rule.PageDom, func(e *colly.HTMLElement) {
 		fmt.Println(e.Name)
-		//q, _ := queue.New(
-		//	2, // Number of consumer threads
-		//	&queue.InMemoryQueueStorage{MaxSize: 10000}, // Use default queue storage,
-		//)
 
 		s,e1 := e.DOM.Html()
 		fmt.Println(s,e1)
