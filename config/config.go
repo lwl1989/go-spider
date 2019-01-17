@@ -6,8 +6,7 @@ import (
 	"io/ioutil"
 )
 type Config struct {
-	HttpHandlerPort int
-	HttpHandle
+	HttpConfig *HttpConfig	`json:"http_config"`
 	Connections *Connections `json:"connections"`
 
 	LogType    string	`json:"log_type"`

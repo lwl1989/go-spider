@@ -5,15 +5,13 @@ type LogFileConfig struct {
 }
 
 type LogMgoConfig struct {
-	Host string `json:"host,omitempty"`
-	Db   string `json:"db,omitempty"`
-	Pw   string `json:"pw,omitempty"`
+	Db   string `json:"db"`
+	Collection string `json:"collection"`
 }
 
 type LogMysqlConfig struct {
 	Connection *Connections
-	Table string `json:"table,omitempty"`
-	TaskTable string `json:"task_table,omitempty"`
+	Table string `json:"table"`
 }
 
 type LogConfigInterface interface {
