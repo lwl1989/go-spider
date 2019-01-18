@@ -8,10 +8,13 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"github.com/lwl1989/go-spider/config"
+	"github.com/gocolly/colly/proxy"
 )
 
 var MapOnce sync.Once
 var Collys CollyMaps
+var Cf *config.Config
 
 type CollyMaps map[string]*CollySpider
 type CollySpider struct {
@@ -26,8 +29,6 @@ func (m CollyMaps) addColly(spider *CollySpider) {
 	if err == nil {
 		m[hash] = spider
 	}
-
-
 }
 
 func (spider *CollySpider) GetHash() (string,error) {
@@ -43,39 +44,82 @@ func (spider *CollySpider) GetHash() (string,error) {
 }
 
 func (spider *CollySpider) Run() (error) {
-	spider.c = colly.NewCollector(
-		colly.URLFilters(
-			regexp.MustCompile(spider.Rule.PageReg),
-		),
-	)
-	c := spider.c
 
+	if spider.Rule.PageReg != "" {
+		opt := colly.URLFilters(
+			regexp.MustCompile(spider.Rule.PageReg),
+		)
+		spider.c = colly.NewCollector(
+			opt,
+		)
+	}else{
+		spider.c = colly.NewCollector()
+	}
+
+	c := spider.c
+	rp, err := proxy.RoundRobinProxySwitcher("socks5://127.0.0.1:1086")
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	c.SetProxyFunc(rp)
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("visiting", r.URL)
+		fmt.Println("抓取到页面", r.URL)
 	})
 	//c.OnHTML("meta")
 	c.OnHTML(spider.Rule.IndexDom, func(e *colly.HTMLElement) {
+		s2 := e.ChildAttrs(spider.Rule.IndexListDom, spider.Rule.IndexListAttr)
+		length := len(s2)
 		//index html got, new a queue with list
-		q, _ := queue.New(
-			2, // Number of consumer threads
-			&queue.InMemoryQueueStorage{MaxSize: spider.Rule.MaxPage}, // Use default queue storage,
-		)
-		s2 := e.ChildAttrs(spider.Rule.IndexListDom,spider.Rule.IndexListAttr)
-		scheme := e.Request.URL.Scheme
-		for _,v := range s2 {
-			if strings.HasPrefix(v, "//") {
-				q.AddURL(scheme+":"+v)
+		//spider.Rule.MaxPage
+		if length > 0 {
+			q, _ := queue.New(
+				1, // Number of consumer threads
+				&queue.InMemoryQueueStorage{MaxSize: length}, // Use default queue storage,
+			)
+			for _,v := range s2 {
+				if strings.HasPrefix(v, "//") {
+					scheme := e.Request.URL.Scheme
+					q.AddURL(scheme+":"+v)
+				}else if strings.HasPrefix(v, "/") {
+					scheme := e.Request.URL.Scheme
+					q.AddURL(scheme+"://"+e.Request.URL.Host + v)
+				}else {
+					q.AddURL(v)
+				}
 			}
+			// run queue
+			q.Run(c)
 		}
-		// run queue
-		q.Run(c)
-	})
-	c.OnHTML(spider.Rule.PageDom, func(e *colly.HTMLElement) {
-		fmt.Println(e.Name)
 
-		s,e1 := e.DOM.Html()
-		fmt.Println(s,e1)
+
 	})
+	c.OnHTML(spider.Rule.PageDom.GetArticle(),func(e *colly.HTMLElement) {
+		var contents = make([]string, 0)
+		if spider.Rule.PageDom.GetArticle() == spider.Rule.PageDom.GetContent() {
+			//return all
+			s,e1 := e.DOM.Html()
+			if e1 != nil {
+				fmt.Println(e1)
+			}else {
+				fmt.Println(s, e1)
+			}
+			contents = append(contents, s)
+		}else{
+			//get children string
+		}
+	})
+	//for _,v := range spider.Rule.PageDom {
+	//	c.OnHTML(v, func(e *colly.HTMLElement) {
+	//		s,e1 := e.DOM.Html()
+	//		if e1 != nil {
+	//			fmt.Println(e1)
+	//		}else {
+	//			fmt.Println(s, e1)
+	//		}
+	//	})
+	//}
+
 	c.Visit(spider.Rule.Index)
 
 	return nil
@@ -83,7 +127,7 @@ func (spider *CollySpider) Run() (error) {
 
 
 func getOneNewColly() *colly.Collector {
-	return  colly.NewCollector()
+	return colly.NewCollector()
 }
 
 func getCollyMaps() CollyMaps {

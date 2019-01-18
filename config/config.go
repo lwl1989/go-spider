@@ -9,8 +9,7 @@ type Config struct {
 	HttpConfig *HttpConfig	`json:"http_config"`
 	Connections *Connections `json:"connections"`
 
-	LogType    string	`json:"log_type"`
-	LogConfig LogConfigInterface `json:"log_config"`
+	LogConfig *LogFileConfig `json:"log_config"`
 }
 
 
@@ -34,7 +33,6 @@ func GetConfig(path string) *Config {
 
 func getConfig() *Config  {
 	return &Config{
-		LogType: "file",
 		Connections: &Connections{
 
 		},

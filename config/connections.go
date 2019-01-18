@@ -9,11 +9,6 @@ type Connections struct {
 		Pw    string `json:"password,omitempty"`
 		TZone string `json:"time_zone,omitempty"`
 	} `json:",omitempty"`
-	Mgo struct{
-		Host string `json:"host,omitempty"`
-		Db   string `json:"db,omitempty"`
-		Pw   string `json:"pw,omitempty"`
-	} `json:",omitempty"`
 	Redis struct{
 		Host string `json:"host,omitempty"`
 		Db   string `json:"db,omitempty"`
