@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 type Config struct {
 	HttpConfig *HttpConfig	`json:"http_config"`
@@ -40,4 +41,8 @@ func getConfig() *Config  {
 			FilePath: "/tmp/spider_log",
 		},
 	}
+}
+
+func (conf *Config) GetServerPort() string {
+	return strconv.FormatInt(int64(conf.HttpConfig.Port), 10)
 }

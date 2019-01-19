@@ -3,20 +3,17 @@ package main
 import (
 	"github.com/lwl1989/go-spider/spider"
 	"github.com/lwl1989/go-spider/config"
-	"github.com/gocolly/colly"
-	"strconv"
-	"os"
-	"encoding/json"
-	"strings"
-	"log"
-	"fmt"
+	"github.com/lwl1989/go-spider/http"
 )
 
 
 func main()  {
 	return
-	pageDom := make([]string, 0)
-	pageDom = append(pageDom, ".thoracis .ndArticle_margin p")
+	pageDom := &spider.PageDom{
+		Article: ".thoracis",
+		Content: ".ndArticle_margin p",
+	}
+	//ageDom = append(pageDom, ".thoracis .ndArticle_margin p")
 	sp5 :=  &spider.CollySpider{
 		Rule: &spider.Rule{
 			Index:"https://tw.finance.appledaily.com/daily/",
@@ -30,7 +27,9 @@ func main()  {
 	}
 	sp5.Run()
 	return
-	pageDom = append(pageDom, ".Cf article")
+	//pageDom = append(pageDom, ".Cf article")
+	pageDom.Article = ".Cf"
+	pageDom.Content = "article"
 	sp4 := &spider.CollySpider{
 		Rule: &spider.Rule{
 			Index:"https://tw.news.yahoo.com/finance",
@@ -44,8 +43,11 @@ func main()  {
 	}
 	sp4.Run()
 	return
-	pageDom = append(pageDom, ".main h1")
-	pageDom = append(pageDom, ".main article")
+	pageDom.Article = ".main"
+	pageDom.Content = "article"
+	pageDom.Title = "h1"
+	//pageDom = append(pageDom, ".main h1")
+	//pageDom = append(pageDom, ".main article")
 	sp3 := &spider.CollySpider{
 		Rule: &spider.Rule{
 			Index:"https://news.cnyes.com/news/cat/headline?exp=a",
@@ -59,7 +61,9 @@ func main()  {
 	}
 	sp3.Run()
 	return
-	pageDom = append(pageDom, "#story_body")
+	pageDom.Title = ""
+	pageDom.Content = "#story_body"
+	pageDom.Article = pageDom.Content
 	sp2 := &spider.CollySpider{
 		Rule: &spider.Rule{
 			Index:"https://money.udn.com/money/index",
@@ -73,7 +77,9 @@ func main()  {
 	}
 	sp2.Run()
 	return
-	pageDom = append(pageDom, ".entry-main")
+	//pageDom = append(pageDom, ".entry-main")
+	pageDom.Content = ".entry-main"
+	pageDom.Article = pageDom.Content
 	sp1 := &spider.CollySpider{
 		Rule: &spider.Rule{
 			Index:"https://ctee.com.tw/",
@@ -87,9 +93,9 @@ func main()  {
 	}
 	sp1.Run()
 	return
-	spider.Cf = config.GetConfig("/etc/go-spider.json")
-	spider.GetLog()
-	pageDom = append(pageDom, ".arttext")
+	//pageDom = append(pageDom, ".arttext")
+	pageDom.Content = ".arttext"
+	pageDom.Article = pageDom.Content
 	sp := &spider.CollySpider{
 		Rule: &spider.Rule{
 			Index:"https://www.chinatimes.com/money/",
@@ -103,68 +109,18 @@ func main()  {
 	}
 	sp.Run()
 	return
+
+	initSpider()
 }
-type comment struct {
-	Author  string `selector:"a.hnuser"`
-	URL     string `selector:".age a[href]" attr:"href"`
-	Comment string `selector:".comment"`
-	Replies []*comment
-	depth   int
-}
-func json_T() {
 
-
-
-		var itemID string
-		itemID = "18936581"
-		//flag.StringVar(&itemID, "id", "", "hackernews post id")
-		//flag.Parse()
-
-		if itemID == "" {
-			log.Println("Hackernews post id required")
-			os.Exit(1)
-		}
-
-		comments := make([]*comment, 0)
-
-		// Instantiate default collector
-		c := colly.NewCollector()
-
-		// Extract comment
-		c.OnHTML("body", func(e *colly.HTMLElement) {
-			fmt.Println(e)
-			width, err := strconv.Atoi(e.ChildAttr("td.ind img", "width"))
-			if err != nil {
-				return
-			}
-			// hackernews uses 40px spacers to indent comment replies,
-			// so we have to divide the width with it to get the depth
-			// of the comment
-			depth := width / 40
-			c := &comment{
-				Replies: make([]*comment, 0),
-				depth:   depth,
-			}
-			e.Unmarshal(c)
-			c.Comment = strings.TrimSpace(c.Comment[:len(c.Comment)-5])
-			if depth == 0 {
-				comments = append(comments, c)
-				return
-			}
-			parent := comments[len(comments)-1]
-			// append comment to its parent
-			for i := 0; i < depth-1; i++ {
-				parent = parent.Replies[len(parent.Replies)-1]
-			}
-			parent.Replies = append(parent.Replies, c)
-		})
-
-		c.Visit("https://news.ycombinator.com/item?id=" + itemID)
-
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
-
-		// Dump json to the standard output
-		enc.Encode(comments)
-
+func initSpider()  {
+	//init spider config
+	spider.Cf = config.GetConfig("/etc/go-spider.json")
+	//init spider log
+	spider.GetLog()
+	//init http task
+	//the task can loop task and  once task
+ 	http.InitTask()
+	//init handler
+	http.GetHandler(spider.Cf)
 }

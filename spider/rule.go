@@ -15,7 +15,6 @@ type Rule struct {
 type Metas struct {
 	Names []string `json:"names,omitempty"`
 }
-
 func (m *Metas) GetNames() []string {
 	return m.Names
 }
