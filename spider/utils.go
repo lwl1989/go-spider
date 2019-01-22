@@ -2,7 +2,6 @@ package spider
 
 import (
 	"strings"
-	"fmt"
 )
 
 //, match ...string
@@ -17,49 +16,46 @@ func RemoveScript(content string, match ...string)  string {
 		matches = match
 	}
 	return removeScript(content, matches...)
-
 }
 
-
+//remove tag in content
+//return value is string
 func removeScript(content string, matches ...string) string {
 	if content == "" {
 		return content
 	}
 	if len(matches) == 0 {
-		fmt.Println("sss")
 		return content
 	}
 	match := make([]string, 0)
 	for k, v := range matches {
+		if strings.Index(v, "<") == -1 {
+			v = "<"+v
+		}
+		// if str len eq match len, go other way
+		if len(content) < len(v) {
+			match := matches[k+1:]
+			return removeScript(content, match...)
+		}
+
 		start := unicodeIndex(content, v)
 
+		// if not found the start tag, go other way
 		if start == -1 {
 			match := matches[k+1:]
 			return removeScript(content, match...)
 		}
 
-		end := -1
-		cutLen := 9
+		//normal pos and cut len need add
+		tagName := strings.TrimLeft(v, "<")
+		endTag := "</"+tagName+">"
+		cutLen := len(endTag)
+		end := unicodeIndex(content, endTag)
 
-		if strings.Index(v, "script") >= 0 {
-			end = unicodeIndex(content, "</script>")
-		}
-		if strings.Index(v, "iframe") >= 0 {
-			end = unicodeIndex(content, "</iframe>")
-		}
-		if strings.Index(v, "ul") >= 0 {
-			end = unicodeIndex(content, "</ul>")
-			cutLen = 5
-		}
-		if strings.Index(v, "style") >= 0 {
-			end = unicodeIndex(content, "</style>")
-			cutLen = 8
-		}
 		if end == -1 {
 			match = matches[k+1:]
 			return removeScript(content, match...)
 		}else {
-
 			content = removePosition(content, start, end+cutLen)
 			start = unicodeIndex(content, v)
 			if start == -1 {
@@ -72,6 +68,7 @@ func removeScript(content string, matches ...string) string {
 	}
 	return content
 }
+//the byte code pos cover to the unicode pos
 func unicodeIndex(str, substr string) int {
 	// 子串在字符串的字节位置
 	result := strings.Index(str,substr)
@@ -87,19 +84,13 @@ func unicodeIndex(str, substr string) int {
 	return result
 }
 
+//remove the unicode code string with start and end
 func removePosition(source string, start int, end int) string {
 	var r = []rune(source)
 	length := len(r)
 
-	if end > length {
-		end = length
-	}
-
-	if start < 0  || start > end {
-		return ""
-	}
-
-	if start == 0 && end == length {
+	//if condition error
+	if end > length || start < 0 || (start == 0 && end == length) {
 		return source
 	}
 
@@ -112,4 +103,12 @@ func removePosition(source string, start int, end int) string {
 		r2 = r[end:length]
 	}
 	return string(append(r1, r2...)[:])
+}
+
+func RemoveSpace(content string) string {
+	bts := []string{"\r","\n","\t"}
+	for _,str := range bts {
+		content = strings.Replace(content, str, "", -1)
+	}
+	return content
 }

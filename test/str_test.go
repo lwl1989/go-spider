@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/lwl1989/go-spider/spider"
 	"fmt"
+	"strings"
 )
 
 func Test_RemoveScript(t *testing.T) {
@@ -79,6 +80,6 @@ func Test_RemoveScript(t *testing.T) {
 								<div>
 	<!--123456789--></div>`
 	str = spider.RemoveScript(str)
+	str = spider.RemoveSpace(str)
 	fmt.Println(str)
-
 }
