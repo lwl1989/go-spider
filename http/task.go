@@ -3,7 +3,6 @@ package http
 import (
 	"github.com/lwl1989/go-spider/spider"
 	"sync"
-	"math"
 )
 
 type Task struct {

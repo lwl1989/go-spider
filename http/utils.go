@@ -15,6 +15,7 @@ func InterfaceToJson(any interface{}) []byte {
 	}
 	return b
 }
+
 func GetHttpErrorWithError(err error, code string) *httpError {
 	return &httpError{
 		Code:code,
