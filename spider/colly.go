@@ -65,16 +65,14 @@ func (spider *CollySpider) runHtmlBody() (error) {
 		}else{
 			s,_ = e.DOM.Find(spider.Rule.PageDom.GetContent()).Html()
 		}
-		fmt.Println(RemoveScript(s))
 		if len(spider.Rule.RemoveTags) > 0 {
-			result.SetContent(RemoveScript(s, spider.Rule.RemoveTags...))
+			result.SetContent(RemoveScript(RemoveSpace(s), spider.Rule.RemoveTags...))
 		}else{
-			result.SetContent(RemoveScript(s))
+			result.SetContent(RemoveScript(RemoveSpace(s)))
 		}
 		result.Title,_ = e.DOM.Find(spider.Rule.PageDom.GetTitle()).Html()
 		result.PublishTime,_ = e.DOM.Find(spider.Rule.PageDom.GetTime()).Html()
 		result.Author,_ = e.DOM.Find(spider.Rule.PageDom.GetAuthor()).Html()
-		fmt.Println(result)
 	})
 
 	return nil
@@ -102,23 +100,26 @@ func (spider *CollySpider)  runListResult() (error) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	//这里用pagedom做了一个映射
+	//metas暂时不处理
+	pd := spider.Rule.PageDom
 	fields := make([]string, 0)
-	fields = append(fields, "body")
-	fields = append(fields, "title")
-	fields = append(fields, "author")
-	fields = append(fields, "publishDate")
-	fields = append(fields, "ad_meta")
+	fields = append(fields,  pd.GetAuthor())
+	//fields = append(fields,  pd.GetOthers())
+	fields = append(fields,  pd.GetTitle())
+	fields = append(fields,  pd.GetContent())
+	fields = append(fields,  pd.GetTime())
 	rm := make(map[string]string)
-	rm["title"] = "title"
-	rm["author"] = "author"
-	rm["publishDate"] = "publish_time"
-	rm["ad_meta"] = "meta"
-	rm["body"] = "content"
+	rm[pd.GetTitle()] = "title"
+	rm[pd.GetAuthor()] = "author"
+	rm[pd.GetTime()] = "publish_time"
+	//rm[pd.GetOthers()] = "meta"
+	rm[pd.GetContent()] = "content"
 	result := &Results{
 		Pos: 0,
 		ResultMap: rm,
 	}
-	l := ParseMapsFindList(m, "items")
+	l := ParseMapsFindList(m, spider.Rule.IndexDom)
 	ParseList(l, fields, result)
 	return  nil
 }
@@ -201,10 +202,7 @@ func (spider *CollySpider) Run() (error) {
 		c.OnError(func(response *colly.Response, e error) {
 			fmt.Println(e)
 		})
-
-
 	}
-
 	return nil
 }
 

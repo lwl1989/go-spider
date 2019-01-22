@@ -4,7 +4,6 @@ import (
 	"testing"
 	"github.com/lwl1989/go-spider/spider"
 	"fmt"
-	"strings"
 )
 
 func Test_RemoveScript(t *testing.T) {

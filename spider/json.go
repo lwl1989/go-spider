@@ -109,13 +109,12 @@ func ParseMapsFindList(m map[string]interface{}, listField string) []interface{}
 				return nil
 			}
 			if k == listField {
-				switch ty:= v.(type) {
+				switch  v.(type) {
 					case map[string]interface{}:
 						return ParseMapsFindList(m, listField)
 					case []interface{}:
 						return v.([]interface{})
 					default:
-						fmt.Println(ty)
 						return nil
 				}
 			}else{

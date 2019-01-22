@@ -4,6 +4,9 @@ import (
 	"github.com/lwl1989/go-spider/config"
 	"net/http"
 	"sync"
+	"net/url"
+	"io"
+	"io/ioutil"
 )
 
 type handler struct {
@@ -39,5 +42,39 @@ func (handler *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Method == "POST" {
+		_,body := initRequest(r)
+		if url.URL.Path == "addRule" {
+			task,err := newTask(body)
+			if err != nil {
+				errResponse(err, w)
+				return
+			}
 
+		}
+
+
+	}
+
+}
+
+func errResponse(err error, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(InterfaceToJson(err))
+}
+func initRequest(r *http.Request) (contentType string, body []byte) {
+	contentType = r.Header.Get("Content-Type")
+	var reader io.Reader = r.Body
+
+	maxFormSize := int64(2 << 20) // 2 MB is a lot of text.
+	reader = io.LimitReader(r.Body, maxFormSize+1)
+
+	b, e := ioutil.ReadAll(reader)
+
+
+	if e != nil {
+		return contentType, nil
+	}
+	return contentType, b
 }

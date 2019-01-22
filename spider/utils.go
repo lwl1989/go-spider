@@ -8,10 +8,10 @@ import (
 func RemoveScript(content string, match ...string)  string {
 	matches := make([]string,0)
 	if len(match) == 0 {
-		matches = append(matches, `<script`)
-		matches = append(matches, "<iframe")
-		matches = append(matches, "<ul")
-		matches = append(matches, "<style")
+		matches = append(matches, `script`)
+		matches = append(matches, "iframe")
+		matches = append(matches, "ul")
+		matches = append(matches, "style")
 	}else{
 		matches = match
 	}
@@ -104,7 +104,7 @@ func removePosition(source string, start int, end int) string {
 	}
 	return string(append(r1, r2...)[:])
 }
-
+//remove  \r \n \t if exists
 func RemoveSpace(content string) string {
 	bts := []string{"\r","\n","\t"}
 	for _,str := range bts {
