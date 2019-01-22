@@ -11,6 +11,7 @@ type Rule struct {
 	PageReg  string `json:"page_reg"`  //列表页规则（正则）
 	PageDom *PageDom `json:"page_dom"` //子页面要抓取的层级
 	Metas *Metas `json:"metas"`      //要抓取的meta
+	RemoveTags []string `json:"remove_tags"` //要移除的标签 比如 <script <iframe <ul .....
 }
 
 //meta need set name

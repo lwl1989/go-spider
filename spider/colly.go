@@ -52,20 +52,29 @@ func (spider *CollySpider) runHtmlBody() (error) {
 	//	fmt.Println(element.Text)
 	//})
 	spider.c.OnHTML(spider.Rule.PageDom.GetArticle(),func(e *colly.HTMLElement) {
-		fmt.Println("get")
-		var contents = make([]string, 0)
-		if spider.Rule.PageDom.GetArticle() == spider.Rule.PageDom.GetContent() {
-			//return all
-			s,e1 := e.DOM.Html()
-			if e1 != nil {
-				fmt.Println(e1)
-			}else {
-				fmt.Println(s, e1)
-			}
-			contents = append(contents, s)
-		}else{
-			//get children string
+		var result = &Result{
+
 		}
+		var s = ""
+		var err error
+		if spider.Rule.PageDom.GetArticle() == spider.Rule.PageDom.GetContent() {
+			s,err = e.DOM.Html()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}else{
+			s,_ = e.DOM.Find(spider.Rule.PageDom.GetContent()).Html()
+		}
+		fmt.Println(RemoveScript(s))
+		if len(spider.Rule.RemoveTags) > 0 {
+			result.SetContent(RemoveScript(s, spider.Rule.RemoveTags...))
+		}else{
+			result.SetContent(RemoveScript(s))
+		}
+		result.Title,_ = e.DOM.Find(spider.Rule.PageDom.GetTitle()).Html()
+		result.PublishTime,_ = e.DOM.Find(spider.Rule.PageDom.GetTime()).Html()
+		result.Author,_ = e.DOM.Find(spider.Rule.PageDom.GetAuthor()).Html()
+		fmt.Println(result)
 	})
 
 	return nil
@@ -184,7 +193,8 @@ func (spider *CollySpider) Run() (error) {
 	if spider.Rule.IndexType == "json" {
 		spider.runListResult()
 	}else{
-
+		spider.runHtmlBody()
+		spider.runHtmlList()
 		c.OnRequest(func(r *colly.Request) {
 			fmt.Println("抓取到页面", r.URL)
 		})
@@ -192,8 +202,7 @@ func (spider *CollySpider) Run() (error) {
 			fmt.Println(e)
 		})
 
-		spider.runHtmlList()
-		spider.runHtmlBody()
+
 	}
 
 	return nil
