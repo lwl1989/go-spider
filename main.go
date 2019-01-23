@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/lwl1989/go-spider/spider"
 	"github.com/lwl1989/go-spider/config"
 	"github.com/lwl1989/go-spider/http"
+	"github.com/lwl1989/go-spider/spider"
 )
 
 
