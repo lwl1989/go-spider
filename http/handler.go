@@ -1,12 +1,13 @@
 package http
 
 import (
+	"errors"
+	"fmt"
 	"github.com/lwl1989/go-spider/config"
-	"net/http"
-	"sync"
 	"io"
 	"io/ioutil"
-	"fmt"
+	"net/http"
+	"sync"
 )
 
 type handler struct {
@@ -36,27 +37,53 @@ func GetHandler(cf *config.Config) *handler {
 func (handler *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//獲取所有正在執行的任務
 	if r.URL.Path == "/tasks" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
-		w.Write(InterfaceToJson(GetAllTask()))
+		successResponse(GetAllTask(), w)
 		return
 	}
 
 	if r.Method == "POST" {
 		_,body := initRequest(r)
 		fmt.Println(body)
-		if r.URL.Path == "/addRule" {
+		if r.URL.Path == "/rule/add" {
 			task,err := newTask(body)
 			if err != nil {
 				errResponse(err, w)
 				return
 			}
-			AddToTask(task)
+			successResponse(AddToTask(task), w)
+			return
+		}
+		if r.URL.Path == "/rule" {
+			uuid := r.FormValue("uuid")
+			arr := GetAllTask()
+			for _,v := range arr{
+				switch v.Job.(type) {
+				case *Task:
+					if uuid == v.Uuid {
+						successResponse(v, w)
+						return
+					}
+				}
+			}
+			errResponse(errors.New("Not found this uuid : "+uuid), w)
+			return
+		}
+		if r.URL.Path == "/rule/stop" {
+			uuid := r.FormValue("uuid")
+			taskJob.StopOnce(uuid)
+			successResponse("stop success", w)
+			return
 		}
 
-
 	}
+	errResponse(errors.New("Not allowed this method! "), w)
+}
 
+
+func successResponse(data interface{}, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(InterfaceToJson(data))
 }
 
 func errResponse(err error, w http.ResponseWriter) {

@@ -14,27 +14,27 @@ type Task struct {
 	hash	string
 	Times   *TaskTimes  `json:"times"`
 }
+
 type TaskTimes   struct {
-	Uuid    string `json:"uuid"`
+
 	RunTime int64  `json:"run_time"`
 	Spacing int64  `json:"spacing_time"`
 	EndTime int64  `json:"end_time"`
 }
-type Tasks map[string]*Task
-var tasks Tasks
 var taskJob *timing.TaskScheduler
 var initTaskOnce sync.Once
 
 func InitTask() {
 	initTaskOnce.Do(func(){
-		tasks = make(Tasks)
 		taskJob = timing.NewScheduler()
 		taskJob.Start()
 	})
 }
-func GetAllTask() map[string]*Task {
-	return tasks
+
+func GetAllTask() []*timing.Task {
+	return taskJob.Export()
 }
+
 func newTask(content []byte) (*Task,error) {
 	t := &Task{
 		Rule:&spider.Rule{
@@ -47,15 +47,6 @@ func newTask(content []byte) (*Task,error) {
 	err := json.Unmarshal(content, t)
 	return t,err
 }
-func (tasks Tasks) addTask(task *Task) {
-	hash := task.GetHash()
-	if _, ok := tasks[hash]; ok {
-		tasks[hash] = task //覆盖
-	}else{
-		tasks[hash] = task
-	}
-}
-
 
 func (task *Task) GetHash() string {
 	if task.hash == "" {
