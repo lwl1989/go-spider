@@ -8,10 +8,10 @@ type Connections struct {
 		User  string `json:"user,omitempty"`
 		Pw    string `json:"password,omitempty"`
 		TZone string `json:"time_zone,omitempty"`
-	} `json:",omitempty"`
+	} `json:"mysql,omitempty"`
 	Redis struct{
 		Host string `json:"host,omitempty"`
 		Db   string `json:"db,omitempty"`
 		Pw   string `json:"pw,omitempty"`
-	}
+	} `json:"redis,omitempty"`
 }

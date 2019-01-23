@@ -8,10 +8,10 @@ import (
 
 
 func main()  {
-	pageDom := &spider.PageDom{
-		Article: ".thoracis",
-		Content: ".ndArticle_margin p",
-	}
+	//pageDom := &spider.PageDom{
+	//	Article: ".thoracis",
+	//	Content: ".ndArticle_margin p",
+	//}
 	//sp5 :=  &spider.CollySpider{
 	//	Rule: &spider.Rule{
 	//		Index:"https://tw.finance.appledaily.com/daily/",
@@ -60,54 +60,54 @@ func main()  {
 	//}
 	//sp3.Run()
 	//return
-	pageDom.Title = ""
-	pageDom.Content = "#story_body"
-	pageDom.Article = pageDom.Content
-	sp2 := &spider.CollySpider{
-		Rule: &spider.Rule{
-			Index:"https://money.udn.com/money/index",
-			IndexDom:".tabs_box_wrapper",
-			IndexListDom:"#tab1 a",
-			IndexListAttr:"href",
-			MaxPage:10000,
-			PageReg: "",
-			PageDom :pageDom,
-		},
-	}
-	sp2.Run()
-	return
-	//pageDom = append(pageDom, ".entry-main")
-	pageDom.Content = ".entry-main"
-	pageDom.Article = pageDom.Content
-	sp1 := &spider.CollySpider{
-		Rule: &spider.Rule{
-			Index:"https://ctee.com.tw/",
-			IndexDom:".vc_tta-container",
-			IndexListDom:".vc_tta-panel .wpb_wrapper a",
-			IndexListAttr:"href",
-			MaxPage:10000,
-			PageReg: "",
-			PageDom :pageDom,
-		},
-	}
-	sp1.Run()
-	return
-	//pageDom = append(pageDom, ".arttext")
-	pageDom.Content = ".arttext"
-	pageDom.Article = pageDom.Content
-	sp := &spider.CollySpider{
-		Rule: &spider.Rule{
-			Index:"https://www.chinatimes.com/money/",
-			IndexDom:".news-list",
-			IndexListDom:".cropper a",
-			IndexListAttr:"href",
-			MaxPage:10000,
-			PageReg: "https://www.chinatimes\\.com/realtimenews/([a-zA-Z0-9-_])",
-			PageDom :pageDom,
-		},
-	}
-	sp.Run()
-	return
+	//pageDom.Title = ""
+	//pageDom.Content = "#story_body"
+	//pageDom.Article = pageDom.Content
+	//sp2 := &spider.CollySpider{
+	//	Rule: &spider.Rule{
+	//		Index:"https://money.udn.com/money/index",
+	//		IndexDom:".tabs_box_wrapper",
+	//		IndexListDom:"#tab1 a",
+	//		IndexListAttr:"href",
+	//		MaxPage:10000,
+	//		PageReg: "",
+	//		PageDom :pageDom,
+	//	},
+	//}
+	//sp2.Run()
+	//return
+	////pageDom = append(pageDom, ".entry-main")
+	//pageDom.Content = ".entry-main"
+	//pageDom.Article = pageDom.Content
+	//sp1 := &spider.CollySpider{
+	//	Rule: &spider.Rule{
+	//		Index:"https://ctee.com.tw/",
+	//		IndexDom:".vc_tta-container",
+	//		IndexListDom:".vc_tta-panel .wpb_wrapper a",
+	//		IndexListAttr:"href",
+	//		MaxPage:10000,
+	//		PageReg: "",
+	//		PageDom :pageDom,
+	//	},
+	//}
+	//sp1.Run()
+	//return
+	////pageDom = append(pageDom, ".arttext")
+	//pageDom.Content = ".arttext"
+	//pageDom.Article = pageDom.Content
+	//sp := &spider.CollySpider{
+	//	Rule: &spider.Rule{
+	//		Index:"https://www.chinatimes.com/money/",
+	//		IndexDom:".news-list",
+	//		IndexListDom:".cropper a",
+	//		IndexListAttr:"href",
+	//		MaxPage:10000,
+	//		PageReg: "https://www.chinatimes\\.com/realtimenews/([a-zA-Z0-9-_])",
+	//		PageDom :pageDom,
+	//	},
+	//}
+	//sp.Run()
+	//return
 
 	initSpider()
 }

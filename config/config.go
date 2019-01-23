@@ -18,7 +18,10 @@ func GetConfig(path string) *Config {
 	fmt.Println("load:", path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic("load config err " + path)
+		data, err = ioutil.ReadFile("config.json")
+		if err != nil {
+			panic("load config err " + path)
+		}
 	}
 	b := []byte(data)
 	config := getConfig()

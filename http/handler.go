@@ -4,9 +4,9 @@ import (
 	"github.com/lwl1989/go-spider/config"
 	"net/http"
 	"sync"
-	"net/url"
 	"io"
 	"io/ioutil"
+	"fmt"
 )
 
 type handler struct {
@@ -23,7 +23,7 @@ func GetHandler(cf *config.Config) *handler {
 			conf:cf,
 		}
 
-		err := http.ListenAndServe(cf.GetServerPort(), httpHandler)
+		err := http.ListenAndServe("0.0.0.0:"+cf.GetServerPort(), httpHandler)
 		if err != nil {
 			panic(err)
 		}
@@ -44,13 +44,14 @@ func (handler *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 		_,body := initRequest(r)
-		if url.URL.Path == "addRule" {
+		fmt.Println(body)
+		if r.URL.Path == "/addRule" {
 			task,err := newTask(body)
 			if err != nil {
 				errResponse(err, w)
 				return
 			}
-
+			AddToTask(task)
 		}
 
 
