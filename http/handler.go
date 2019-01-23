@@ -24,7 +24,7 @@ func GetHandler(cf *config.Config) *handler {
 			conf:cf,
 		}
 
-		err := http.ListenAndServe("0.0.0.0:"+cf.GetServerPort(), httpHandler)
+		err := http.ListenAndServe(cf.GetServerListen(), httpHandler)
 		if err != nil {
 			panic(err)
 		}

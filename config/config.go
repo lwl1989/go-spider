@@ -46,6 +46,6 @@ func getConfig() *Config  {
 	}
 }
 
-func (conf *Config) GetServerPort() string {
-	return strconv.FormatInt(int64(conf.HttpConfig.Port), 10)
+func (conf *Config) GetServerListen() string {
+	return "0.0.0.0:"+strconv.FormatInt(int64(conf.HttpConfig.Port), 10)
 }
