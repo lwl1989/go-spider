@@ -16,10 +16,8 @@ import (
 )
 
 var MapOnce sync.Once
-var Collys CollyMaps
 var Cf *config.Config
 
-type CollyMaps map[string]*CollySpider
 type CollySpider struct {
 	c *colly.Collector
 	Rule *Rule
@@ -172,37 +170,26 @@ func (spider *CollySpider) runHtmlList() (error) {
 func (spider *CollySpider) Run() (error) {
 
 
-	if spider.Rule.PageReg != "" {
-		opt := colly.URLFilters(
-			regexp.MustCompile(spider.Rule.PageReg),
-		)
-		spider.c = colly.NewCollector(
-			opt,
-		)
-	}else{
-		spider.c = colly.NewCollector()
-	}
-	spider.c.SetRequestTimeout(30*time.Second)
-	c := spider.c
-	rp, err := proxy.RoundRobinProxySwitcher("socks5://127.0.0.1:1086")
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	c.SetProxyFunc(rp)
-
 	if spider.Rule.IndexType == "json" {
 		spider.runListResult()
 	}else{
+		spider.getOneNewColly()
 		spider.runHtmlBody()
 		spider.runHtmlList()
-		c.OnRequest(func(r *colly.Request) {
+		spider.c.OnRequest(func(r *colly.Request) {
+			//todo: this way need send error to log
 			fmt.Println("抓取到页面", r.URL)
 		})
-		c.OnError(func(response *colly.Response, e error) {
+		spider.c.OnError(func(response *colly.Response, e error) {
+			//todo: this way need send error to log
 			fmt.Println(e)
 		})
+		spider.c.OnScraped(func(response *colly.Response) {
+			//todo: the page over ! this way need send error to log
+			fmt.Println(response)
+		})
 	}
+
 	return nil
 }
 
@@ -218,13 +205,23 @@ func checkUrl(url *url.URL, v string) string {
 	}
 }
 
-func getOneNewColly() *colly.Collector {
-	return colly.NewCollector()
-}
+func (spider *CollySpider) getOneNewColly() {
+	if spider.Rule.PageReg != "" {
+		opt := colly.URLFilters(
+			regexp.MustCompile(spider.Rule.PageReg),
+		)
+		spider.c = colly.NewCollector(
+			opt,
+		)
+	}else{
+		spider.c = colly.NewCollector()
+	}
+	spider.c.SetRequestTimeout(30*time.Second)
 
-func getCollyMaps() CollyMaps {
-	MapOnce.Do(func() {
-		Collys = make(map[string]*CollySpider)
-	})
-	return Collys
+	rp, err := proxy.RoundRobinProxySwitcher("socks5://127.0.0.1:1086")
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	spider.c.SetProxyFunc(rp)
 }

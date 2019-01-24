@@ -1,11 +1,13 @@
 package spider
 
 
+//It's only use in Json Result
 type Results struct {
 	Pos int `json:"pos"`
 	Value []*Result `json:"value"`
 	ResultMap   map[string]string      `json:"result_map"`
 }
+//It use to All Response
 type Result struct {
 		Title       interface{}            `json:"title"`
 		Metas       map[string]interface{} `json:"metas"`
@@ -13,13 +15,16 @@ type Result struct {
 		Content     []interface{}          `json:"content"`
 		PublishTime interface{}            `json:"publish_time"`
 }
-
-type ResultsInterface interface{
+//the result Interface
+type ResultInterface interface{
 	SetTitle(title interface{})
 	AddMeta(name string,value interface{})
 	SetAuthor(author interface{})
 	SetContent(content interface{})
 	SetPublishTime(time interface{})
+}
+
+type ResultsInterface interface{
 	SetResultValue(field string, value interface{}, fieldName string)
 	GetResultMap(string string) string
 }
@@ -67,8 +72,6 @@ func (allRes *Results) SetContent(content interface{}) {
 func (allRes *Results) SetPublishTime(time interface{}) {
 	allRes.Value[allRes.Pos].PublishTime = time
 }
-
-
 
 func (res *Result) SetTitle(title interface{}) {
 	res.Title = title

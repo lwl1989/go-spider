@@ -1,10 +1,15 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
-    "sourceMap": true
+  "http_config":{
+    "port":8090
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "connections":{
+    "redis" : {
+      "host":"127.0.0.1:6379",
+      "db":"0",
+      "pw":""
+    }
+  },
+  "log_config":{
+    "file_path":"/tmp/spider_"
+  }
 }
