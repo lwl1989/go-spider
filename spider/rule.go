@@ -12,7 +12,9 @@ type Rule struct {
 	PageDom *PageDom `json:"page_dom"` //子页面要抓取的层级
 	Metas *Metas `json:"metas"`      //要抓取的meta
 	RemoveTags []string `json:"remove_tags"` //要移除的标签 比如 <script <iframe <ul .....
+	CallBack ICall `json:"call_back,omitempty"`
 }
+
 
 //meta need set name
 type Metas struct {
