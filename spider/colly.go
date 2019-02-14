@@ -7,29 +7,27 @@ import (
 	"github.com/gocolly/colly/queue"
 	"regexp"
 	"strings"
-	"sync"
 	"github.com/lwl1989/go-spider/config"
 	"github.com/gocolly/colly/proxy"
 	"encoding/json"
 	"net/url"
 	"time"
+	"github.com/PuerkitoBio/goquery"
 )
 
-var MapOnce sync.Once
 var Cf *config.Config
 
 type CollySpider struct {
 	c *colly.Collector
-	Rule *Rule
+	Rule *Rule `json:"rule"`
+	Times *TaskTimes `json:"times"`
 	hash string
 }
-
-
-func (m CollyMaps) addColly(spider *CollySpider) {
-	hash,err := spider.GetHash()
-	if err == nil {
-		m[hash] = spider
-	}
+type TaskTimes   struct {
+	RunTime int64  `json:"run_time"`
+	Spacing int64  `json:"spacing_time"`
+	EndTime int64  `json:"end_time,omitempty"`
+	Number  int  `json:"number,omitempty"`
 }
 
 func (spider *CollySpider) GetHash() (string,error) {
@@ -51,8 +49,24 @@ func (spider *CollySpider) runHtmlBody() (error) {
 	//})
 	spider.c.OnHTML(spider.Rule.PageDom.GetArticle(),func(e *colly.HTMLElement) {
 		var result = &Result{
-
+			Metas:make(map[string]interface{}),
 		}
+		l  := e.DOM.Parents().Find("meta")
+
+		l.Each(func(i int, selection *goquery.Selection) {
+			name,exists := selection.Attr("name")
+			if exists {
+				h,_ := selection.Attr("content")
+				result.Metas[name] = h
+			}else{
+				name,exists = selection.Attr("property")
+				if exists {
+					h,_ := selection.Attr("content")
+					result.Metas[name] = h
+				}
+			}
+
+		})
 		var s = ""
 		var err error
 		if spider.Rule.PageDom.GetArticle() == spider.Rule.PageDom.GetContent() {
@@ -71,6 +85,7 @@ func (spider *CollySpider) runHtmlBody() (error) {
 		result.Title,_ = e.DOM.Find(spider.Rule.PageDom.GetTitle()).Html()
 		result.PublishTime,_ = e.DOM.Find(spider.Rule.PageDom.GetTime()).Html()
 		result.Author,_ = e.DOM.Find(spider.Rule.PageDom.GetAuthor()).Html()
+		DoCallBack(result)
 	})
 
 	return nil
@@ -167,9 +182,7 @@ func (spider *CollySpider) runHtmlList() (error) {
 	return nil
 }
 
-func (spider *CollySpider) Run() (error) {
-
-
+func (spider *CollySpider) Run() {
 	if spider.Rule.IndexType == "json" {
 		spider.runListResult()
 	}else{
@@ -190,7 +203,6 @@ func (spider *CollySpider) Run() (error) {
 		})
 	}
 
-	return nil
 }
 
 func checkUrl(url *url.URL, v string) string {
@@ -218,10 +230,26 @@ func (spider *CollySpider) getOneNewColly() {
 	}
 	spider.c.SetRequestTimeout(30*time.Second)
 
-	rp, err := proxy.RoundRobinProxySwitcher("socks5://127.0.0.1:1086")
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
+	if Cf.HttpConfig.Proxy != "" {
+		rp, err := proxy.RoundRobinProxySwitcher(Cf.HttpConfig.Proxy)
+		if err != nil {
+			panic(err)
+		}
+		spider.c.SetProxyFunc(rp)
 	}
-	spider.c.SetProxyFunc(rp)
+}
+
+func NewSpider(content []byte) (*CollySpider,error) {
+	t := &CollySpider{
+			Rule:&Rule{
+				PageDom:&PageDom{
+
+				},
+			},
+			Times:&TaskTimes{
+
+			},
+	}
+	err := json.Unmarshal(content, t)
+	return t,err
 }

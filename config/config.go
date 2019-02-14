@@ -11,6 +11,8 @@ type Config struct {
 	Connections *Connections `json:"connections"`
 
 	LogConfig *LogFileConfig `json:"log_config"`
+
+	CallBack *CallBack `json:"call_back"`
 }
 
 
@@ -42,6 +44,9 @@ func getConfig() *Config  {
 		},
 		LogConfig: &LogFileConfig{
 			FilePath: "/tmp/spider_log",
+		},
+		CallBack:&CallBack{
+
 		},
 	}
 }

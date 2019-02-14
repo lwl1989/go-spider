@@ -2,12 +2,12 @@ package http
 
 import (
 	"errors"
-	"fmt"
 	"github.com/lwl1989/go-spider/config"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"sync"
+	"github.com/lwl1989/go-spider/spider"
 )
 
 type handler struct {
@@ -43,9 +43,8 @@ func (handler *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 		_,body := initRequest(r)
-		fmt.Println(body)
 		if r.URL.Path == "/rule/add" {
-			task,err := newTask(body)
+			task,err := spider.NewSpider(body)
 			if err != nil {
 				errResponse(err, w)
 				return
@@ -57,13 +56,16 @@ func (handler *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			uuid := r.FormValue("uuid")
 			arr := GetAllTask()
 			for _,v := range arr{
-				switch v.Job.(type) {
+				switch t:=v.(type) {
 				case *Task:
-					if uuid == v.Uuid {
+					if uuid == t.Uuid {
 						successResponse(v, w)
 						return
 					}
+				default:
+					successResponse(t, w)
 				}
+
 			}
 			errResponse(errors.New("Not found this uuid : "+uuid), w)
 			return

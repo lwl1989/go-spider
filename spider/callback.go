@@ -5,6 +5,10 @@ import (
 	"net/http"
 	"errors"
 	"sync"
+	"time"
+	"encoding/json"
+	"bytes"
+	"log"
 )
 
 //this interface must use after call data to other way
@@ -36,14 +40,61 @@ type HttpCallResponse struct {
 	Error error
 }
 
+type RedisCall struct {
+	Params interface{} `json:"params"`
+}
+
+type RedisResponse struct {
+	Msg string `json:"msg"`
+}
+
+func (r *RedisCall) Do() {
+	cf := Cf.Connections
+	c := GetRedis(cf)
+	buf := bytes.NewBufferString("")
+	encoder := json.NewEncoder(buf)
+	encoder.SetEscapeHTML(false)
+
+	if err := encoder.Encode(&r.Params); err != nil {
+		c.LPush("MofNews", err.Error())
+	} else {
+		c.LPush("MofNews", buf.String())
+	}
+	//values,err := json.Marshal(r.Params)
+	//if err != nil {
+	//
+	//}else{
+	//
+	//}
+}
+
 func (call *HttpCall) Do()  {
 	//
+	c := http.DefaultClient
+	c.Timeout = time.Duration(20 * time.Second)
+
+	method := call.Method
+	switch method {
+		case "GET":
+			c.Get(call.Url)
+		case "POST":
+			fallthrough
+		default:
+			data,err := json.Marshal(call.Params)
+			if err == nil {
+				_,err := c.Post(call.Url, "application/json", bytes.NewBuffer(data[:]))
+				if err != nil {
+					log.Panicln("error")
+				}
+			}else{
+				log.Panicln("error")
+			}
+	}
 }
 
 func (call *HttpCall) OnResponse(response CallResponse)  {
 	call.lock.Lock()
 	defer call.lock.Unlock()
-
 }
 
 func (call *HttpCall) OnError(err CallResponseError)   {

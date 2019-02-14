@@ -23,13 +23,18 @@ type Iterator interface{
 func GetHttpClient() *http.Client {
 	c := http.DefaultClient
 	c.Timeout = time.Duration(20 * time.Second)
-	l,_:=url.Parse("https://127.0.0.1:1087")
-	c.Transport = &http.Transport{
+	pro := Cf.HttpConfig.HttpProxy
+
+	tr := &http.Transport{
 		DisableKeepAlives: false,//关闭连接复用，因为后台连接过多最后会造成端口耗尽
 		MaxIdleConns: -1,  //最大空闲连接数量
 		IdleConnTimeout: time.Duration(20 * time.Second),  //空闲连接超时时间
-		Proxy: http.ProxyURL(l), //设置http代理地址
 	}
+	if pro != "" {
+		l,_:=url.Parse(Cf.HttpConfig.HttpProxy)
+		tr.Proxy = http.ProxyURL(l)//设置http代理地址
+	}
+	c.Transport = tr
 	return c
 }
 

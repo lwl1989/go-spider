@@ -92,3 +92,16 @@ func (res *Result) SetContent(content interface{}) {
 func (res *Result) SetPublishTime(time interface{}) {
 	res.PublishTime = time
 }
+
+
+func DoCallBack(res *Result) {
+	if Cf.CallBack.Method == "redis" {
+		rc := &RedisCall{
+			Params:res,
+		}
+		rc.Do()
+	}else{
+
+	}
+
+}
